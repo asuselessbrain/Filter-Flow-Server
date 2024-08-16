@@ -29,12 +29,26 @@ async function run() {
     app.get("/products", async (req, res) => {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
-      const result = await productsCollection.find().skip(page*size).limit(size).toArray();
+      const filter = req.query.filter;
+
+      let query = {}
+
+      if(filter) query = {category : filter}
+      const result = await productsCollection
+        .find(query)
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
     });
 
     app.get("/products-count", async (req, res) => {
-      const count = await productsCollection.countDocuments();
+      const filter = req.query.filter;
+
+      let query = {}
+
+      if(filter) query = {category : filter}
+      const count = await productsCollection.countDocuments(query);
       res.send({ count });
     });
     // Send a ping to confirm a successful connection
