@@ -32,25 +32,37 @@ async function run() {
       const filter = req.query.filter;
       const sort = req.query.sort;
       const search = req.query.search;
-      // const sortByDate = req.query.sortByDate;
+      const sortByDate = req.query.sortByDate;
+      const minPrice = parseFloat(req.query.minPrice); // Minimum price filter
+      const maxPrice = parseFloat(req.query.maxPrice);
+      const brand = req.query.brand
 
       let query = {
         productName: { $regex: search, $options: "i" },
       };
 
+      if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+        query.price = { $gte: minPrice, $lte: maxPrice };
+      } else if (!isNaN(minPrice)) {
+        query.price = { $gte: minPrice };
+      } else if (!isNaN(maxPrice)) {
+        query.price = { $lte: maxPrice };
+      }
+
       if (filter) query.category = filter;
+      if (brand) {
+        query.brand = brand;
+      }
 
       let sortOptions = {};
-
-      // Sorting by price
       if (sort) {
         sortOptions.price = sort === "asc" ? 1 : -1;
       }
 
-      // Sorting by date
-      // if (sortByDate) {
-      //   sortOptions.createdAt = sortByDate === "asc" ? 1 : -1;
-      // }
+      if (sortByDate) {
+        sortOptions.createdAt = sortByDate === "asc" ? 1 : -1;
+      }
+
       const result = await productsCollection
         .find(query)
         .sort(sortOptions)
@@ -63,9 +75,23 @@ async function run() {
     app.get("/products-count", async (req, res) => {
       const filter = req.query.filter;
       const search = req.query.search;
+      const minPrice = parseFloat(req.query.minPrice); // Minimum price filter
+      const maxPrice = parseFloat(req.query.maxPrice);
+      const brand = req.query.brand
+
       let query = {
         productName: { $regex: search, $options: "i" },
       };
+      if (!isNaN(minPrice) && !isNaN(maxPrice)) {
+        query.price = { $gte: minPrice, $lte: maxPrice };
+      } else if (!isNaN(minPrice)) {
+        query.price = { $gte: minPrice };
+      } else if (!isNaN(maxPrice)) {
+        query.price = { $lte: maxPrice };
+      }
+      if (brand) {
+        query.brand = brand;
+      }
 
       if (filter) query.category = filter;
       const count = await productsCollection.countDocuments(query);
