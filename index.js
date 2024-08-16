@@ -31,17 +31,29 @@ async function run() {
       const page = parseInt(req.query.page) - 1;
       const filter = req.query.filter;
       const sort = req.query.sort;
+      const search = req.query.search;
+      // const sortByDate = req.query.sortByDate;
 
-      let query = {};
+      let query = {
+        productName: { $regex: search, $options: "i" },
+      };
 
-      if (filter) query = { category: filter };
+      if (filter) query.category = filter;
 
-      let option = {};
+      let sortOptions = {};
 
-      if (sort) option = { sort: { price: sort === "asc" ? 1 : -1 } };
+      // Sorting by price
+      if (sort) {
+        sortOptions.price = sort === "asc" ? 1 : -1;
+      }
 
+      // Sorting by date
+      // if (sortByDate) {
+      //   sortOptions.createdAt = sortByDate === "asc" ? 1 : -1;
+      // }
       const result = await productsCollection
-        .find(query, option)
+        .find(query)
+        .sort(sortOptions)
         .skip(page * size)
         .limit(size)
         .toArray();
@@ -50,8 +62,12 @@ async function run() {
 
     app.get("/products-count", async (req, res) => {
       const filter = req.query.filter;
-      let query = {};
-      if (filter) query = { category: filter };
+      const search = req.query.search;
+      let query = {
+        productName: { $regex: search, $options: "i" },
+      };
+
+      if (filter) query.category = filter;
       const count = await productsCollection.countDocuments(query);
       res.send({ count });
     });
