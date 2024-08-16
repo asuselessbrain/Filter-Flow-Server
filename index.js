@@ -30,12 +30,18 @@ async function run() {
       const size = parseInt(req.query.size);
       const page = parseInt(req.query.page) - 1;
       const filter = req.query.filter;
+      const sort = req.query.sort;
 
-      let query = {}
+      let query = {};
 
-      if(filter) query = {category : filter}
+      if (filter) query = { category: filter };
+
+      let option = {};
+
+      if (sort) option = { sort: { price: sort === "asc" ? 1 : -1 } };
+
       const result = await productsCollection
-        .find(query)
+        .find(query, option)
         .skip(page * size)
         .limit(size)
         .toArray();
@@ -44,10 +50,8 @@ async function run() {
 
     app.get("/products-count", async (req, res) => {
       const filter = req.query.filter;
-
-      let query = {}
-
-      if(filter) query = {category : filter}
+      let query = {};
+      if (filter) query = { category: filter };
       const count = await productsCollection.countDocuments(query);
       res.send({ count });
     });
