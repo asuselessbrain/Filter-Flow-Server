@@ -9,6 +9,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "https://filter-flow.netlify.app"
     ]
   })
 );
